@@ -19,7 +19,7 @@ const Login = () => {
 
   useEffect(() => {
     window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'normal',
+      'size': 'invisible',
       'callback': (response) => {}
     });
   }, []);
