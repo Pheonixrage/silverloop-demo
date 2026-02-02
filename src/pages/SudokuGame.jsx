@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, RefreshCw, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
+import clsx from 'clsx';
 
 const INITIAL_BOARD = [
   [5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -16,16 +18,14 @@ const INITIAL_BOARD = [
 ];
 
 const SudokuGame = () => {
+  const { t, darkMode } = useAppContext();
   const [board, setBoard] = useState(INITIAL_BOARD);
-  const [selectedCell, setSelectedCell] = useState(null); // [row, col]
+  const [selectedCell, setSelectedCell] = useState(null);
 
   const handleNumberInput = (num) => {
     if (!selectedCell) return;
     const [r, c] = selectedCell;
-    
-    // Don't overwrite initial non-zero values
     if (INITIAL_BOARD[r][c] !== 0) return;
-
     const newBoard = [...board];
     newBoard[r] = [...newBoard[r]];
     newBoard[r][c] = num;
@@ -33,79 +33,82 @@ const SudokuGame = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <Link to="/games" className="p-2 -ml-2 rounded-full hover:bg-white/20">
-          <ChevronLeft size={24} className="text-slate-800" />
+    <div className="flex flex-col h-full min-h-[100%] pb-10">
+      <div className="flex items-center justify-between mb-8">
+        <Link to="/games" className={clsx("p-2 rounded-2xl shadow-sm", darkMode ? "bg-slate-800 text-white" : "bg-white text-slate-800")}>
+          <ChevronLeft size={24} />
         </Link>
-        <h1 className="text-2xl font-bold text-slate-800">Daily Sudoku</h1>
-        <div className="w-8" /> {/* Spacer */}
+        <h1 className={clsx("text-2xl font-black leading-tight", darkMode ? "text-white" : "text-slate-800")}>{t.game_sudoku}</h1>
+        <div className="w-10" />
       </div>
 
-      {/* Game Board */}
-      <div className="glass-panel p-2 rounded-2xl aspect-square mb-6 flex flex-col justify-center">
+      <div className={clsx(
+        "p-2 rounded-[2rem] aspect-square mb-10 flex flex-col justify-center shadow-2xl border transition-colors",
+        darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-white"
+      )}>
         {board.map((row, rIndex) => (
-          <div key={rIndex} className="flex">
+          <div key={rIndex} className="flex h-full">
             {row.map((cell, cIndex) => {
               const isInitial = INITIAL_BOARD[rIndex][cIndex] !== 0;
               const isSelected = selectedCell?.[0] === rIndex && selectedCell?.[1] === cIndex;
-              
-              // Border logic for 3x3 grids
-              const borderRight = (cIndex + 1) % 3 === 0 && cIndex !== 8 ? 'border-r-2 border-slate-300' : 'border-r border-slate-200';
-              const borderBottom = (rIndex + 1) % 3 === 0 && rIndex !== 8 ? 'border-b-2 border-slate-300' : 'border-b border-slate-200';
+              const borderRight = (cIndex + 1) % 3 === 0 && cIndex !== 8 ? (darkMode ? 'border-r-4 border-slate-900' : 'border-r-4 border-slate-200') : (darkMode ? 'border-r border-slate-700/50' : 'border-r border-slate-100');
+              const borderBottom = (rIndex + 1) % 3 === 0 && rIndex !== 8 ? (darkMode ? 'border-b-4 border-slate-900' : 'border-b-4 border-slate-200') : (darkMode ? 'border-b border-slate-700/50' : 'border-b border-slate-100');
 
               return (
-                <motion.div
+                <div
                   key={`${rIndex}-${cIndex}`}
-                  whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedCell([rIndex, cIndex])}
-                  className={`flex-1 aspect-square flex items-center justify-center text-lg font-medium 
-                    ${borderRight} ${borderBottom}
-                    ${isSelected ? 'bg-indigo-200' : isInitial ? 'bg-slate-50' : 'bg-white'}
-                    ${isInitial ? 'text-slate-900 font-bold' : 'text-indigo-600'}
-                  `}
+                  className={clsx(
+                    "flex-1 flex items-center justify-center text-lg transition-all cursor-pointer relative",
+                    borderRight, borderBottom,
+                    isSelected ? (darkMode ? "bg-indigo-500/30 ring-2 ring-indigo-500 z-10" : "bg-indigo-100 ring-2 ring-indigo-500 z-10") : (isInitial ? (darkMode ? "bg-white/5" : "bg-slate-50") : ""),
+                    isInitial ? (darkMode ? "text-white font-black" : "text-slate-900 font-black") : (darkMode ? "text-indigo-400 font-bold" : "text-indigo-600 font-bold")
+                  )}
                 >
                   {cell !== 0 ? cell : ''}
-                </motion.div>
+                </div>
               );
             })}
           </div>
         ))}
       </div>
 
-      {/* Numpad */}
-      <div className="grid grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-5 gap-3 mb-10">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <button
             key={num}
             onClick={() => handleNumberInput(num)}
-            className="glass-button h-14 rounded-xl text-xl font-bold text-slate-700 flex items-center justify-center shadow-sm"
+            className={clsx(
+              "h-14 rounded-2xl text-xl font-black shadow-lg transition-all active:scale-90",
+              darkMode ? "bg-slate-800 text-white hover:bg-slate-700 border border-slate-700" : "bg-white text-slate-800 hover:bg-slate-50 border border-white"
+            )}
           >
             {num}
           </button>
         ))}
         <button 
           onClick={() => handleNumberInput(0)}
-          className="glass-button h-14 rounded-xl text-slate-500 flex items-center justify-center"
+          className={clsx(
+            "h-14 rounded-2xl shadow-lg transition-all active:scale-90 flex items-center justify-center",
+            darkMode ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" : "bg-rose-50 text-rose-500 border border-rose-100"
+          )}
         >
           ✖
         </button>
       </div>
 
-      {/* Footer Info */}
-      <div className="glass-panel p-4 rounded-xl flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
-            <Trophy size={20} />
+      <div className={clsx("p-5 rounded-[2rem] flex items-center justify-between shadow-xl border", darkMode ? "bg-slate-800/60 border-slate-700" : "bg-white border-white")}>
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-orange-100 text-orange-600 rounded-2xl shadow-inner">
+            <Trophy size={24} />
           </div>
           <div>
-            <p className="text-xs text-slate-500">Best Score</p>
-            <p className="font-bold text-slate-800">14:20 min</p>
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest italic mb-0.5">Record</p>
+            <p className={clsx("text-lg font-black italic", darkMode ? "text-white" : "text-slate-800")}>14:20 MIN</p>
           </div>
         </div>
-        <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-          <RefreshCw size={20} />
+        <button className={clsx("p-4 rounded-2xl shadow-md transition-transform active:rotate-180 duration-500", darkMode ? "bg-slate-700 text-indigo-400" : "bg-indigo-50 text-indigo-600")}>
+          <RefreshCw size={24} />
         </button>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Activity, Heart, ChevronRight, Zap, Target, Flame } from 'lucide-react';
+import { Trophy, Activity, Heart, ChevronRight, Zap, Target, Flame, Settings as SettingsIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
 
 const ActionCard = ({ title, subtitle, icon: Icon, color, delay, highlight }) => (
   <motion.div
@@ -27,6 +28,8 @@ const ActionCard = ({ title, subtitle, icon: Icon, color, delay, highlight }) =>
 );
 
 const Home = () => {
+  const { t } = useAppContext();
+
   return (
     <div className="flex flex-col gap-6 pb-20">
       {/* Header */}
@@ -36,35 +39,40 @@ const Home = () => {
         className="flex justify-between items-end"
       >
         <div>
-          <p className="text-slate-500 font-medium text-sm">Good Morning,</p>
-          <h1 className="text-3xl font-bold text-slate-800">Grandpa Joe</h1>
+          <p className="text-slate-500 font-medium text-sm">{t.greeting}</p>
+          <h1 className="text-3xl font-black text-slate-800 leading-tight">{t.user}</h1>
         </div>
-        <Link to="/community">
-          <div className="w-12 h-12 rounded-full bg-indigo-100 border-2 border-white shadow-md overflow-hidden relative">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" />
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
-          </div>
-        </Link>
+        <div className="flex gap-2">
+           <Link to="/settings" className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-500">
+             <SettingsIcon size={20} />
+           </Link>
+           <Link to="/community">
+            <div className="w-12 h-12 rounded-full bg-indigo-100 border-2 border-white shadow-md overflow-hidden relative">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+            </div>
+          </Link>
+        </div>
       </motion.div>
 
       {/* Hero Widget: Daily Streak */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden shrink-0"
+        className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2.5rem] p-6 text-white shadow-xl relative overflow-hidden shrink-0"
       >
         <div className="absolute top-0 right-0 p-32 bg-white opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
         
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-indigo-100 font-medium">Daily Streak</p>
-              <h2 className="text-4xl font-bold">12 Days</h2>
+              <p className="text-indigo-100 font-bold uppercase tracking-widest text-[10px]">{t.streak}</p>
+              <h2 className="text-4xl font-black italic">12 {t.days}</h2>
             </div>
-            <Flame className="text-orange-300 animate-pulse" size={32} />
+            <Flame className="text-orange-300 animate-pulse" size={40} />
           </div>
           
-          <div className="w-full bg-black/20 h-2 rounded-full mb-2 overflow-hidden">
+          <div className="w-full bg-black/20 h-2.5 rounded-full mb-2 overflow-hidden shadow-inner">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: '80%' }}
@@ -72,57 +80,66 @@ const Home = () => {
               className="h-full bg-white/90 rounded-full" 
             />
           </div>
-          <p className="text-xs text-indigo-100">You're sharper than 80% of your circle!</p>
+          <p className="text-xs text-indigo-100 font-medium">{t.streak_desc}</p>
         </div>
       </motion.div>
 
       {/* Live Feed Section */}
       <div>
-        <h2 className="text-lg font-bold text-slate-800 mb-4 px-1 flex items-center gap-2">
+        <h2 className="text-lg font-black text-slate-800 mb-4 px-1 flex items-center gap-2">
           <Zap size={18} className="text-amber-500 fill-amber-500" />
-          Live Challenges
+          {t.live_challenges}
         </h2>
         
-        <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 snap-x">
+        <div className="flex gap-4 overflow-x-auto pb-6 -mx-6 px-6 snap-x">
           {[1, 2, 3].map((_, i) => (
-            <div key={i} className="snap-center shrink-0 w-64 glass-panel p-4 rounded-3xl relative overflow-hidden">
-               <div className="flex items-center gap-3 mb-3">
-                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i === 0 ? 'Sarah' : i === 1 ? 'Raj' : 'Maya'}`} className="w-8 h-8 rounded-full bg-slate-200" alt="Friend" />
-                 <p className="text-xs font-bold text-slate-700">
-                   {i === 0 ? 'Grandma Sarah' : i === 1 ? 'Uncle Raj' : 'Sister Maya'}
-                   <span className="font-normal text-slate-500 block">sent a challenge</span>
-                 </p>
+            <motion.div 
+              key={i} 
+              whileTap={{ scale: 0.98 }}
+              className="snap-center shrink-0 w-64 glass-panel p-5 rounded-[2.5rem] relative overflow-hidden bg-white/60 border-indigo-100 shadow-lg"
+            >
+               <div className="flex items-center gap-3 mb-4">
+                 <div className="relative">
+                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i === 0 ? 'Sarah' : i === 1 ? 'Raj' : 'Maya'}`} className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm" alt="Friend" />
+                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
+                 </div>
+                 <div>
+                   <p className="text-xs font-black text-slate-800 leading-tight">
+                     {i === 0 ? 'Sarah' : i === 1 ? 'Raj' : 'Maya'}
+                   </p>
+                   <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-tighter">Sudoku Duel</p>
+                 </div>
                </div>
-               <h3 className="font-bold text-slate-800 mb-2">Beat 1,500 pts</h3>
-               <div className="text-xs font-bold text-white bg-indigo-500 px-3 py-1 rounded-full inline-block">
-                 Accept
-               </div>
-            </div>
+               <p className="text-sm text-slate-600 mb-4 font-bold">{t.accept} <span className="text-slate-900 underline decoration-indigo-300">Beat 1,500 pts</span></p>
+               <Link to="/games/sudoku" className="w-full block text-center text-xs font-black text-white bg-indigo-600 py-3 rounded-xl shadow-md active:bg-indigo-700 transition-colors uppercase">
+                 {t.accept}
+               </Link>
+            </motion.div>
           ))}
         </div>
       </div>
 
       {/* Jump Back In */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-700 mb-4 px-1">Jump Back In</h2>
+        <h2 className="text-lg font-black text-slate-800 mb-4 px-1">{t.jump_back}</h2>
         <ActionCard 
-          title="Daily Brain Gym" 
-          subtitle="Reflexes & Memory • 10m left" 
+          title={t.brain_gym} 
+          subtitle={t.brain_gym_desc} 
           icon={Target} 
           color="bg-orange-400" 
           delay={0.2} 
           highlight={true}
         />
         <ActionCard 
-          title="Morning Health Check" 
-          subtitle="Log your vitals" 
+          title={t.health_check} 
+          subtitle={t.health_check_desc} 
           icon={Heart} 
           color="bg-rose-400" 
           delay={0.3} 
         />
         <ActionCard 
-          title="Practice Math" 
-          subtitle="Keep the numbers sharp" 
+          title={t.practice_math} 
+          subtitle={t.practice_math_desc} 
           icon={Activity} 
           color="bg-emerald-400" 
           delay={0.4} 

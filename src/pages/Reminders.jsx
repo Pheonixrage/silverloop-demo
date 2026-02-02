@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, CheckCircle2, Clock } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import clsx from 'clsx';
 
-const ReminderItem = ({ time, text, completed }) => (
-  <div className={`glass-panel p-4 rounded-2xl flex items-center gap-4 mb-3 transition-opacity ${completed ? 'opacity-50' : 'opacity-100'}`}>
-    <button className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${completed ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300'}`}>
-      {completed && <CheckCircle2 size={14} className="text-white" />}
+const ReminderItem = ({ time, text, completed, darkMode }) => (
+  <div className={clsx(
+    "p-5 rounded-[2rem] flex items-center gap-5 mb-4 shadow-sm border transition-all",
+    darkMode ? "bg-slate-800/40 border-slate-700/50" : "bg-white/60 border-white",
+    completed ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'
+  )}>
+    <button className={clsx(
+      "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all shadow-inner",
+      completed ? 'bg-emerald-500 border-emerald-500' : (darkMode ? 'border-slate-600' : 'border-slate-200 bg-white')
+    )}>
+      {completed && <CheckCircle2 size={16} className="text-white" strokeWidth={3} />}
     </button>
     <div className="flex-1">
-      <p className={`font-medium ${completed ? 'text-slate-500 line-through' : 'text-slate-800'}`}>{text}</p>
-      <div className="flex items-center gap-1 text-xs text-slate-400 mt-1">
-        <Clock size={12} />
+      <p className={clsx(
+        "font-black text-sm tracking-tight",
+        completed ? (darkMode ? 'text-slate-500 line-through' : 'text-slate-400 line-through') : (darkMode ? 'text-white' : 'text-slate-800')
+      )}>{text}</p>
+      <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-black uppercase mt-1 tracking-widest italic">
+        <Clock size={12} className="text-indigo-400" />
         {time}
       </div>
     </div>
@@ -18,6 +30,7 @@ const ReminderItem = ({ time, text, completed }) => (
 );
 
 const Reminders = () => {
+  const { t, darkMode } = useAppContext();
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
 
@@ -25,37 +38,49 @@ const Reminders = () => {
     setIsListening(!isListening);
     if (!isListening) {
       setTimeout(() => {
-        setTranscript("Remind me to call the doctor...");
-      }, 1000);
+        setTranscript("Remind me to call...");
+      }, 800);
+      setTimeout(() => {
+        setTranscript("Remind me to call the doctor at 5 PM.");
+      }, 1800);
       setTimeout(() => {
         setIsListening(false);
         setTranscript("");
-      }, 3000);
+      }, 4000);
     }
   };
 
-  return (
-    <div className="flex flex-col h-full relative">
-      <h1 className="text-3xl font-bold text-slate-800 mb-6">Voice Note</h1>
+  const MOCK_REMINDERS = [
+    { time: "08:00 AM", text: t.health_check, completed: true },
+    { time: "10:30 AM", text: t.practice_math, completed: false },
+    { time: "05:00 PM", text: "Family Call", completed: false },
+  ];
 
-      <div className="flex-1 overflow-y-auto pb-32">
-        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Today</h3>
-        <ReminderItem time="08:00 AM" text="Take Blood Pressure Medicine" completed={true} />
-        <ReminderItem time="10:30 AM" text="Water Plants" completed={false} />
-        <ReminderItem time="05:00 PM" text="Call Dr. Smith" completed={false} />
+  return (
+    <div className="flex flex-col h-full relative pb-40">
+      <h1 className={clsx("text-3xl font-black leading-tight mb-8", darkMode ? "text-white" : "text-slate-800")}>{t.voice_note}</h1>
+
+      <div className="flex-1 overflow-y-auto">
+        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 px-2 italic">{t.today}</h3>
+        {MOCK_REMINDERS.map((r, i) => (
+          <ReminderItem key={i} {...r} darkMode={darkMode} />
+        ))}
       </div>
 
       {/* Voice Interaction Area */}
-      <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center justify-center pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center justify-center pointer-events-none pb-4">
         <AnimatePresence>
           {isListening && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="glass-panel px-6 py-3 rounded-2xl mb-6 backdrop-blur-xl border border-indigo-200 shadow-xl"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className={clsx(
+                "px-8 py-5 rounded-[2rem] mb-8 backdrop-blur-2xl border shadow-[0_20px_50px_rgba(0,0,0,0.15)]",
+                darkMode ? "bg-indigo-900/40 border-indigo-500/30" : "bg-white/90 border-indigo-100"
+              )}
             >
-              <p className="text-indigo-600 font-medium animate-pulse">
+              <p className={clsx("font-black italic text-lg text-center", darkMode ? "text-indigo-300" : "text-indigo-600")}>
                 {transcript || "Listening..."}
               </p>
             </motion.div>
@@ -64,17 +89,24 @@ const Reminders = () => {
 
         <button
           onClick={toggleListening}
-          className={`pointer-events-auto w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
-            isListening ? 'bg-red-500 scale-110 shadow-red-300' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-300'
-          }`}
+          className={clsx(
+            "pointer-events-auto w-24 h-24 rounded-full flex items-center justify-center shadow-[0_15px_45px_rgba(0,0,0,0.1)] transition-all duration-500 relative overflow-hidden",
+            isListening ? 'bg-red-500 scale-110' : 'bg-indigo-600 active:scale-95'
+          )}
         >
-          <Mic size={32} className="text-white" />
+          <div className={clsx("absolute inset-0 bg-gradient-to-br transition-opacity duration-500", isListening ? "from-red-400 to-red-600 opacity-100" : "from-indigo-500 to-indigo-700 opacity-100")} />
+          <Mic size={40} className="text-white relative z-10" strokeWidth={2.5} />
           
           {isListening && (
-            <span className="absolute w-full h-full rounded-full border-4 border-red-500 opacity-50 animate-ping" />
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 3 }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="absolute inset-0 bg-white/20 rounded-full"
+            />
           )}
         </button>
-        <p className="text-slate-400 text-sm mt-3 font-medium">Tap to Speak</p>
+        <p className={clsx("text-[10px] font-black uppercase tracking-widest mt-5", darkMode ? "text-slate-500" : "text-slate-400")}>{t.tap_speak}</p>
       </div>
     </div>
   );
